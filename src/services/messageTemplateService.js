@@ -44,6 +44,13 @@ function createTemplatePayload(name, { headerText, bodyParams = [], buttons = []
   };
 }
 
+function createTextPayload(body = '') {
+  return {
+    type: 'text',
+    text: { body: clamp(body, 4096) }
+  };
+}
+
 function buildPreview(title, body) {
   return [title, body].filter(Boolean).join('\n').trim();
 }
@@ -189,13 +196,10 @@ function buildGreeting(name) {
 
 function buildFallback(name) {
   const nextSteps = 'Send MENU, EXPLORE, COUNTER, RESTAURANT, PARCEL, PLAN, BOOK or ENQUIRE.';
+  const body = `Got it, ${name}. Tap a keyword so I can help.\n${nextSteps}`;
   return {
-    preview: buildPreview('Need a keyword', nextSteps),
-    payload: createTemplatePayload('pc_default_nudge', {
-      headerText: 'Need a keyword?',
-      bodyParams: [`Got it, ${name}. Tap a keyword so I can help.`, nextSteps],
-      buttons: [{ payload: 'MENU' }, { payload: 'BOOK' }, { payload: 'HELP' }]
-    })
+    preview: buildPreview('Need a keyword', body),
+    payload: createTextPayload(body)
   };
 }
 
