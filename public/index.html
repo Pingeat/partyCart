@@ -8,24 +8,100 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
     <style>
-      body { font-family: 'Inter', sans-serif; background: #050505; color: #fff; margin: 0; }
-      .hero { padding: 3rem 1.5rem; text-align: center; background: radial-gradient(circle at top, #ff4d6d, #050505); }
-      h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-      p { max-width: 720px; margin: 0 auto 1rem; line-height: 1.6; }
-      .badge { display: inline-block; padding: 0.4rem 1rem; border-radius: 999px; background: rgba(255,255,255,0.1); margin: 0.2rem; }
-      footer { text-align: center; padding: 1rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; }
+      :root {
+        color-scheme: dark;
+      }
+      body {
+        font-family: 'Inter', sans-serif;
+        background: #050505;
+        color: #fff;
+        margin: 0;
+      }
+      .hero {
+        padding: 3rem 1.5rem 2rem;
+        text-align: center;
+        background: radial-gradient(circle at top, #ff4d6d, #050505 60%);
+      }
+      h1 {
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        margin-bottom: 1rem;
+      }
+      p {
+        max-width: 720px;
+        margin: 0 auto 1rem;
+        line-height: 1.65;
+      }
+      .badge {
+        display: inline-block;
+        padding: 0.4rem 1rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 0.2rem;
+        font-size: 0.85rem;
+        letter-spacing: 0.02em;
+      }
+      .grid {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        margin: 2rem auto;
+        max-width: 960px;
+        padding: 0 1.5rem 3rem;
+      }
+      .card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 1rem;
+        padding: 1.25rem;
+        text-align: left;
+      }
+      .card h3 {
+        margin-top: 0;
+        margin-bottom: 0.5rem;
+        font-size: 1.1rem;
+      }
+      .card p {
+        margin: 0;
+        font-size: 0.95rem;
+        line-height: 1.4;
+      }
+      footer {
+        text-align: center;
+        padding: 1rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 0.85rem;
+      }
     </style>
   </head>
   <body>
     <section class="hero">
       <div class="badge">WhatsApp-first concierge</div>
-      <div class="badge">Menus • Counters • Parcels</div>
-      <h1>Yumzy Partycart Demo Server</h1>
+      <div class="badge">10/20/30 pax party carts</div>
+      <div class="badge">Live counters • Parcel ops • Planning</div>
+      <h1>Yumzy Partycart Experience Server</h1>
       <p>
-        This instance mirrors the church bot production layout: Express server, config driven env files, WhatsApp webhook handlers, and modular services.
-        Point Meta Webhooks to <code>/webhook/whatsapp</code> and impress clients with instant menu intelligence, parcel routing, and planning desks.
+        This stack powers the new explore journeys – curated Mughlai party carts, 10-pax mini drops, 30-pax catering crews, live counter theatre, parcel safety, and a human concierge hotline. Point Meta webhooks to
+        <code>/webhook/whatsapp</code> to see interactive replies, booking templates, and enquiry fallbacks inside WhatsApp.
       </p>
-      <p>Need access? Drop a hi on WhatsApp and type MENU, COUNTER, RESTAURANT, PARCEL, or PLAN.</p>
+      <p>Say MENU, EXPLORE, COUNTER, BOOK, or ENQUIRE to experience the bot.</p>
+    </section>
+    <section class="grid">
+      <article class="card">
+        <h3>Explore packs</h3>
+        <p>Pull the exact Mini, Signature, or Grand Party Cart data (price, pax served, hero dishes) just like the app explore tab.</p>
+      </article>
+      <article class="card">
+        <h3>Menu deep-dives</h3>
+        <p>Mughlai Party Cart, Global Bowl Studio, and more – each response shares course-by-course details plus upgrades.</p>
+      </article>
+      <article class="card">
+        <h3>Smart booking</h3>
+        <p>The bot now collects guests, menu, date, service window, venue, and notes before pushing it to the concierge desk.</p>
+      </article>
+      <article class="card">
+        <h3>Human hotline</h3>
+        <p>Need a human? ENQUIRE replies with phone + email contacts so clients can escalate instantly.</p>
+      </article>
     </section>
     <footer>© Yumzy Partycart Concierge · Powered by Node.js</footer>
   </body>
