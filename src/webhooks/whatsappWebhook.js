@@ -1,14 +1,24 @@
 const config = require('../config/env');
 const whatsappService = require('../services/whatsappService');
 const sessionService = require('../services/sessionService');
+const bookingService = require('../services/bookingService');
 const {
   buildGreeting,
   handleMenuFlow,
   handleCounterFlow,
   handleRestaurantFlow,
   handleParcelFlow,
-  handlePlanFlow
+  handlePlanFlow,
+  handleExploreFlow,
+  handleBookingFlow,
+  handleEnquiryFlow
 } = require('../handlers/journeyHandlers');
+
+const COMMANDS = ['menu', 'counter', 'restaurant', 'parcel', 'plan', 'explore', 'book', 'enquire', 'help'];
+
+function detectCommand(text = '') {
+  return COMMANDS.find((command) => text.startsWith(command));
+}
 
 function verifyWebhook(query) {
   const mode = query['hub.mode'];
@@ -32,24 +42,45 @@ async function processWebhook(body = {}) {
   const profileName = change?.contacts?.[0]?.profile?.name || 'there';
   const textBody = (message.text?.body || '').trim();
   const normalized = textBody.toLowerCase();
+  const command = detectCommand(normalized);
 
   sessionService.appendTranscript(from, 'guest', textBody);
+  const session = sessionService.getSession(from);
+  const bookingState = session.preferences.booking;
 
   let reply;
-  if (normalized.startsWith('menu')) {
+  if (!command && bookingState?.stage === 'awaiting-details' && textBody) {
+    const parsed = bookingService.parseBookingDetails(textBody);
+    if (bookingService.hasStructuredData(parsed)) {
+      const { details, missing, stage } = bookingService.mergeBookingDetails(from, parsed);
+      if (stage === 'submitted') {
+        reply = bookingService.buildConfirmation(details);
+      } else {
+        reply = `Almost locked in! I still need: ${bookingService.formatMissingFields(missing)}\n\n${bookingService.getTemplate()}`;
+      }
+    } else {
+      reply = `Let's use the template so I capture every detail:\n${bookingService.getTemplate()}`;
+    }
+  } else if (command === 'menu') {
     reply = handleMenuFlow(from);
-  } else if (normalized.startsWith('counter')) {
+  } else if (command === 'counter') {
     reply = handleCounterFlow(from);
-  } else if (normalized.startsWith('restaurant')) {
+  } else if (command === 'restaurant') {
     reply = handleRestaurantFlow(from);
-  } else if (normalized.startsWith('parcel')) {
+  } else if (command === 'parcel') {
     reply = handleParcelFlow(from);
-  } else if (normalized.startsWith('plan')) {
+  } else if (command === 'plan') {
     reply = handlePlanFlow(from);
-  } else if (normalized.startsWith('help')) {
+  } else if (command === 'explore') {
+    reply = handleExploreFlow(from);
+  } else if (command === 'book') {
+    reply = handleBookingFlow(from);
+  } else if (command === 'enquire') {
+    reply = handleEnquiryFlow(from);
+  } else if (command === 'help') {
     reply = buildGreeting(profileName);
   } else {
-    reply = `${buildGreeting(profileName)}\n\nYou can also reply with MENU, COUNTER, RESTAURANT, PARCEL, or PLAN.`;
+    reply = `${buildGreeting(profileName)}\n\nYou can also reply with MENU, EXPLORE, COUNTER, RESTAURANT, PARCEL, PLAN, BOOK, or ENQUIRE.`;
   }
 
   sessionService.appendTranscript(from, 'concierge', reply);

@@ -1,14 +1,16 @@
 const partyCartService = require('../services/partyCartService');
 const sessionService = require('../services/sessionService');
+const bookingService = require('../services/bookingService');
 
 function buildGreeting(name = 'there') {
-  return `Hi ${name}! I'm the Yumzy Partycart concierge. I can share curated menus, live counters, restaurant partners, parcel support, or a full planning desk. Reply with MENU, COUNTER, RESTAURANT, PARCEL, PLAN, or HELP.`;
+  return `Hey ${name}! I'm the Yumzy Partycart concierge. Tap in for curated menus, 10/20/30-pax carts, live counters, parcel ops, and full planning. Reply with MENU, EXPLORE, COUNTER, RESTAURANT, PARCEL, PLAN, BOOK, ENQUIRE, or HELP.`;
 }
 
 function handleMenuFlow(userId, payload = {}) {
   const summary = partyCartService.formatMenuSummary();
+  const deepDive = partyCartService.formatMenuCollections();
   sessionService.updatePreferences(userId, 'menus', payload);
-  return `Yumzy curated menus:\n\n${summary}\n\nShare guest count + vibe so I can lock tasting slots.`;
+  return `Yumzy curated menus:\n\n${summary}\n\nChef specials:\n${deepDive}\n\nReply BOOK to freeze one with your date.`;
 }
 
 function handleCounterFlow(userId, payload = {}) {
@@ -35,11 +37,32 @@ function handlePlanFlow(userId, payload = {}) {
   return `Concierge perks:\n${summary}\n\nTell me budgets, venues, and agenda beats so I can craft a deck.`;
 }
 
+function handleExploreFlow(userId, payload = {}) {
+  const packs = partyCartService.formatExploreDeck();
+  sessionService.updatePreferences(userId, 'explore', payload);
+  return `Party orders ready from the explore tab:\n\n${packs}\n\nPick a cart + date and I'll keep the kitchen on standby.`;
+}
+
+function handleBookingFlow(userId, payload = {}) {
+  bookingService.startBooking(userId);
+  sessionService.updatePreferences(userId, 'bookingIntent', payload);
+  return `Let's lock your booking. ${bookingService.getTemplate()}\n\nYou can paste that template with your details or say ENQUIRE for a quick call.`;
+}
+
+function handleEnquiryFlow(userId, payload = {}) {
+  const contacts = bookingService.getContacts();
+  sessionService.updatePreferences(userId, 'enquiry', payload);
+  return `Here are the concierge hotlines:\n${contacts}\n\nMessage me again with MENU, BOOK, or EXPLORE when you're ready.`;
+}
+
 module.exports = {
   buildGreeting,
   handleMenuFlow,
   handleCounterFlow,
   handleRestaurantFlow,
   handleParcelFlow,
-  handlePlanFlow
+  handlePlanFlow,
+  handleExploreFlow,
+  handleBookingFlow,
+  handleEnquiryFlow
 };
