@@ -1,0 +1,11 @@
+{
+  "name": "Yumzy Partycart Concierge",
+  "flows": [
+    "MENU",
+    "COUNTER",
+    "RESTAURANT",
+    "PARCEL",
+    "PLAN"
+  ],
+  "version": "1.0.0"
+}
