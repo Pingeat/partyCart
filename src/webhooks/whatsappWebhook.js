@@ -45,6 +45,14 @@ async function processWebhook(body = {}) {
   const normalized = textBody.toLowerCase();
   const command = detectCommand(normalized);
 
+  console.info('[webhook] Incoming WhatsApp message', {
+    from,
+    profileName,
+    textBody,
+    command: command || 'fallback',
+    messageId: message.id
+  });
+
   sessionService.appendTranscript(from, 'guest', textBody);
   const session = sessionService.getSession(from);
   const bookingState = session.preferences.booking;
@@ -94,10 +102,39 @@ async function processWebhook(body = {}) {
 
   sessionService.appendTranscript(from, 'concierge', reply.preview);
 
+  console.info('[webhook] Prepared reply', {
+    to: from,
+    preview: reply.preview,
+    type: reply.payload?.type,
+    template: reply.payload?.template?.name
+  });
+
   try {
     await whatsappService.sendMessage(from, reply.payload);
   } catch (error) {
-    console.error('[whatsapp] Failed to send message', error.message);
+    console.error('[whatsapp] Failed to send message', {
+      to: from,
+      error: error.message,
+      statusCode: error.statusCode,
+      code: error.response?.error?.code,
+      template: reply.payload?.template?.name
+    });
+
+    const missingTemplate = error.response?.error?.code === 132001;
+    if (missingTemplate && reply.preview) {
+      console.warn('[whatsapp] Falling back to text message for missing template', {
+        to: from,
+        template: reply.payload?.template?.name
+      });
+      try {
+        await whatsappService.sendMessage(from, {
+          type: 'text',
+          text: { body: reply.preview }
+        });
+      } catch (fallbackError) {
+        console.error('[whatsapp] Fallback text send failed', fallbackError.message);
+      }
+    }
   }
 
   return { status: 200, body: 'ok' };
