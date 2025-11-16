@@ -84,7 +84,10 @@ function getContacts() {
 }
 
 function buildConfirmation(details = {}) {
-  return `🎉 Booking placeholder locked!\n${formatBookingRecap(details)}\n\n${getContacts()}\nOur catering desk will dial in to reconfirm tasting + payment timelines.`;
+  return {
+    recap: formatBookingRecap(details),
+    contacts: getContacts()
+  };
 }
 
 module.exports = {

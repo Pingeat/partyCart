@@ -38,21 +38,30 @@ function postJson(urlString, payload, headers = {}) {
   });
 }
 
-async function sendMessage(to, body) {
+async function sendMessage(to, message = {}) {
   if (!config.whatsapp.token || !config.whatsapp.phoneNumberId) {
     console.info('[whatsapp] Credentials missing, logging message instead.');
-    console.info(body);
+    console.info(JSON.stringify({ to, ...message }, null, 2));
     return { skipped: true };
+  }
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to,
+    type: message.type || 'text'
+  };
+
+  if (payload.type === 'template') {
+    payload.template = message.template;
+  } else if (message.text?.body) {
+    payload.text = { body: message.text.body };
+  } else {
+    payload.text = { body: message.body || '' };
   }
 
   return postJson(
     `https://graph.facebook.com/v17.0/${config.whatsapp.phoneNumberId}/messages`,
-    {
-      messaging_product: 'whatsapp',
-      to,
-      type: 'text',
-      text: { body }
-    },
+    payload,
     {
       Authorization: `Bearer ${config.whatsapp.token}`
     }
