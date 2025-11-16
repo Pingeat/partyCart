@@ -59,7 +59,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (req.method === 'GET' && pathname === '/api/ping') {
-    return sendJson(res, 200, { message: buildGreeting('partner') });
+    return sendJson(res, 200, { message: buildGreeting('partner').preview });
   }
 
   if (pathname.startsWith('/webhook/whatsapp')) {

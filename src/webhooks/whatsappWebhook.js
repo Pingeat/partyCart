@@ -2,6 +2,7 @@ const config = require('../config/env');
 const whatsappService = require('../services/whatsappService');
 const sessionService = require('../services/sessionService');
 const bookingService = require('../services/bookingService');
+const messageTemplates = require('../services/messageTemplateService');
 const {
   buildGreeting,
   handleMenuFlow,
@@ -54,12 +55,16 @@ async function processWebhook(body = {}) {
     if (bookingService.hasStructuredData(parsed)) {
       const { details, missing, stage } = bookingService.mergeBookingDetails(from, parsed);
       if (stage === 'submitted') {
-        reply = bookingService.buildConfirmation(details);
+        const confirmation = bookingService.buildConfirmation(details);
+        reply = messageTemplates.buildBookingConfirmation(confirmation);
       } else {
-        reply = `Almost locked in! I still need: ${bookingService.formatMissingFields(missing)}\n\n${bookingService.getTemplate()}`;
+        reply = messageTemplates.buildBookingMissingFields(
+          bookingService.formatMissingFields(missing),
+          bookingService.getTemplate()
+        );
       }
     } else {
-      reply = `Let's use the template so I capture every detail:\n${bookingService.getTemplate()}`;
+      reply = messageTemplates.buildBookingTemplateHint(bookingService.getTemplate());
     }
   } else if (command === 'menu') {
     reply = handleMenuFlow(from);
@@ -80,13 +85,17 @@ async function processWebhook(body = {}) {
   } else if (command === 'help') {
     reply = buildGreeting(profileName);
   } else {
-    reply = `${buildGreeting(profileName)}\n\nYou can also reply with MENU, EXPLORE, COUNTER, RESTAURANT, PARCEL, PLAN, BOOK, or ENQUIRE.`;
+    reply = messageTemplates.buildFallback(profileName);
   }
 
-  sessionService.appendTranscript(from, 'concierge', reply);
+  if (!reply) {
+    reply = messageTemplates.buildGreeting(profileName);
+  }
+
+  sessionService.appendTranscript(from, 'concierge', reply.preview);
 
   try {
-    await whatsappService.sendMessage(from, reply);
+    await whatsappService.sendMessage(from, reply.payload);
   } catch (error) {
     console.error('[whatsapp] Failed to send message', error.message);
   }
